@@ -47,6 +47,26 @@ func CreateInstancePost(url string, body interface{}, headers http.Header) (*htt
 	return client.Do(request)
 }
 
+func listInstance(url string, headers http.Header)(*http.Response, error){
+	request, err := http.NewRequest(http.MethodGet, url, nil)
+	if err != nil {
+		return nil, err
+	}
+	request.Header = headers
+	client := http.Client{}
+	return client.Do(request)
+}
+
+func deleteInstance(url string, headers http.Header)(*http.Response, error){
+	request, err := http.NewRequest(http.MethodDelete, url, nil)
+	if err != nil {
+		return nil, err
+	}
+	request.Header = headers
+	client := http.Client{}
+	return client.Do(request)
+}
+
 func handleCall(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("handle Called")
 	input := &admissionv1.AdmissionReview{}
@@ -63,7 +83,7 @@ func handleCall(w http.ResponseWriter, r *http.Request) {
 	createInstance(inst)
 }
 
-func createInstance(inst *InstanceInfo) {
+func getToken(inst *InstanceInfo)CreateAccessResponse{
 	fmt.Println("getting token")
 	// get tokenId
 	headers := http.Header{}
@@ -82,7 +102,11 @@ func createInstance(inst *InstanceInfo) {
 	if err := json.Unmarshal(bytes, &result); err != nil {
 		log.Println(fmt.Sprintf("error when trying to unmarshal create repo successful response: %s", err.Error()))
 	}
+	return result
+}
 
+func createInstance(inst *InstanceInfo) {
+	result := getToken(inst)
 	fmt.Println("creating instance")
 	// create instance
 	newHeader := http.Header{}
@@ -109,6 +133,52 @@ func createInstance(inst *InstanceInfo) {
 	fmt.Println(string(newBytes))
 }
 
+
+func handleDelete(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("Delete handle Called")
+	input := &admissionv1.AdmissionReview{}
+	err := json.NewDecoder(r.Body).Decode(input)
+	if err != nil {
+		sendErr(w, fmt.Errorf("could not unmarshal review: %v", err))
+		return
+	}
+	inst := &InstanceInfo{}
+	err = json.Unmarshal(input.Request.OldObject.Raw, inst)
+	if err != nil {
+		sendErr(w, fmt.Errorf("could not unmarshal instance: %v", err))
+	}
+
+	urlGetInstance := "https://kr1-api-instance.infrastructure.cloud.toast.com/v2/" + inst.Spec.TenantID + "/servers/detail"
+	result := getToken(inst)
+	newHeader := http.Header{}
+	newHeader.Set("Content-Type", "application/json")
+	newHeader.Set("X-Auth-Token", result.Access.Token.ID)
+	newResponse, err := listInstance(urlGetInstance, newHeader)
+	if err != nil {
+		fmt.Println(err)
+	}
+	servers := &ServerInfo{}
+	newBytes, err := ioutil.ReadAll(newResponse.Body)
+	if err != nil {
+		fmt.Println(err)
+	}
+	defer newResponse.Body.Close()
+	var serverID string
+
+	err = json.Unmarshal(newBytes, servers)
+	for _, v := range servers.Servers{
+		if v.Name == inst.Spec.InstName{
+			serverID = v.ID
+		}
+	}
+	fmt.Println("server id is ", serverID)
+	urlDeleteInstance := "https://kr1-api-instance.infrastructure.cloud.toast.com/v2/" + inst.Spec.TenantID + "/servers/" + serverID
+	deleteInstance(urlDeleteInstance, newHeader)
+
+}
+
+
+
 func sendErr(w http.ResponseWriter, err error) {
 	out, err := json.Marshal(map[string]string{
 		"Err": err.Error(),
@@ -126,6 +196,7 @@ func main() {
 	fmt.Println("server started")
 	mux := http.NewServeMux()
 	mux.HandleFunc("/call", handleCall)
+	mux.HandleFunc("/delete", handleDelete)
 	srv := &http.Server{Addr: ":443", Handler: mux}
 	log.Fatal(srv.ListenAndServeTLS("/certs/webhook.crt", "/certs/webhook-key.pem"))
 }
