@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    run: k8s-at-controller
+  name: k8s-at-controller
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      run: k8s-at-controller
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        run: k8s-at-controller
+    spec:
+      containers:
+        - image: k8s-custom-controller:3.5
+          name: k8s-at-controller
+          resources: {}
+          ports:
+            - containerPort: 443
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: k8s-at-controller
+spec:
+  selector:
+    run: k8s-at-controller
+  ports:
+    - port: 443
+      targetPort: 443

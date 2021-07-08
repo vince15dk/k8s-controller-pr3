@@ -1,0 +1,42 @@
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: instances.nhn.cloud.io
+spec:
+  group: nhn.cloud.io
+  versions:
+    - name: v1
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            spec:
+              type: object
+              properties:
+                tenantId:
+                  type: string
+                userName:
+                  type: string
+                password:
+                  type: string
+                instName:
+                  type: string
+                imageRef:
+                  type: string
+                flavorRef:
+                  type: string
+                subnetId:
+                  type: string
+                keyName:
+                  type: string
+                blockSize:
+                  type: integer
+  scope: Namespaced
+  names:
+    plural: instances
+    singular: inst
+    kind: Instance
+    shortNames:
+      - inst

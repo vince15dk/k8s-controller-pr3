@@ -1,0 +1,25 @@
+apiVersion: admissionregistration.k8s.io/v1
+kind: MutatingWebhookConfiguration
+metadata:
+  name: k8s-custom-create-controllera
+webhooks:
+  - name: k8s-at-controller.default.svc.cluster.local
+    rules:
+      - operations:
+          - "CREATE"
+        apiGroups:
+          - "nhn.cloud.io"
+        apiVersions:
+          - "v1"
+        resources:
+          - "instances"
+    failurePolicy: Ignore
+    sideEffects: None
+    admissionReviewVersions: ["v1", "v1beta1"]
+    clientConfig:
+      service:
+        path: "/call"
+        port: 443
+        name: k8s-at-controller
+        namespace: default
+      caBundle: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUMxVENDQWIyZ0F3SUJBZ0lSQUsrOXoxRTZZMHNCZ3VtRCs0cldQM2d3RFFZSktvWklodmNOQVFFTEJRQXcKRWpFUU1BNEdBMVVFQXd3SGF6aHpMV1ZrZFRBZUZ3MHlNVEEwTWpjeE1UVTRORFphRncweU5qQTBNamN4TVRVNApORFphTUJJeEVEQU9CZ05WQkFNTUIyczRjeTFsWkhVd2dnRWlNQTBHQ1NxR1NJYjNEUUVCQVFVQUE0SUJEd0F3CmdnRUtBb0lCQVFETjBnbUJZOW8zdVJaWERZSE1VU0V2U0syTWVwL0VIdlMxYVlTNFgvTGxQK25ST0FPUzFzL2EKa3UrTHdHVCtweTZFeTJqL3JialR3QWlLYWw4T2tGTGI5Vzc4QVd5YUZUd2VOZzRYbnlEcmVQaGdmVEEzQkFTdQpxR2VUWWM4NHQ0MTZWaDhMVGFRVldrdnd3OWdFdWlkZDFlb256Z2pjOFQzTmtlOTgxSkZyUnFXb3IybEJ1N2g2CjE2bWN0Y1dOVHEyV3JNVTlZSm1kSHNEV0FsVjZtOGFGY1lYb20ySEZKcDVnczNiYURaUll0R1g5aEpQdFRlYWgKWlZQQmRMTW9yTUc2bHBuMHZmNVl1aE9xeHhHU0dQU0FYYUxxZElyUStmQnYvcmc1eG5xelgwb2FIK3Q5d1R3YgpON0xiTzdQSkhrMEYyeE55R0lrL1RjYWVseXJvNFk1akFnTUJBQUdqSmpBa01CSUdBMVVkRXdFQi93UUlNQVlCCkFmOENBUUF3RGdZRFZSMFBBUUgvQkFRREFnSUVNQTBHQ1NxR1NJYjNEUUVCQ3dVQUE0SUJBUUFwcHIyQ01HMUoKZHhyKzZJaXFEK3FrL3U2RXBMTTBEUHk1eExNcmhIMXJwRkRoSDZ5MVgvWjZFeWU5TUFlNFc1Wk9ISXlKNEdscQpUUFJGRUxPa1ZsZzU0SkRoNjNCbEJqcTNidFR6UXArVmlIZFNrbVhNMWVNKzJoVng3dHU3SCtESHBTYlVpZExlCkdzOGpPUlk0Tm50SXRvWC9WWFdNYlVVZ3h2RGUxeDVSNGszQWVMcHdYVWxreWh5eEZFREU1eHpnbkl5ZUdsL0QKelpxd1hTY2JVMlV6MEg4MkpyS2FIcHN1RFZ3K3pudDc0WkNOdHdBTm91aDZtc0s3VTFhcndzTVA5YkhFSHFERApyVVF5WVN6bUxYelNUMGk0ZDF3bFdpUzE5dHFkcjZyMTkyWFBtbFFKMXdzb2liMkNnL3lqeTRMeFhvNVZIOXA2Ci92ZVFjSktLd1lkbAotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0t
