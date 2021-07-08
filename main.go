@@ -177,8 +177,6 @@ func handleDelete(w http.ResponseWriter, r *http.Request) {
 
 }
 
-
-
 func sendErr(w http.ResponseWriter, err error) {
 	out, err := json.Marshal(map[string]string{
 		"Err": err.Error(),
