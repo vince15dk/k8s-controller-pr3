@@ -114,11 +114,11 @@ func createInstance(inst *InstanceInfo) {
 	newHeader.Set("X-Auth-Token", result.Access.Token.ID)
 	urlCreateInstance := "https://kr1-api-instance.infrastructure.cloud.toast.com/v2/" + inst.Spec.TenantID + "/servers"
 	instance.Server.Name = inst.Spec.InstName
-	instance.Server.ImageRef = inst.Spec.ImageRef
-	instance.Server.FlavorRef = inst.Spec.FlavorRef
+	instance.Server.ImageRef = images[inst.Spec.ImageRef]
+	instance.Server.FlavorRef = flavors[inst.Spec.FlavorRef]
 	instance.Server.Networks = []SubnetTest{{inst.Spec.SubnetID}}
 	instance.Server.KeyName = inst.Spec.KeyName
-	instance.Server.BlockDeviceMappingV2 = []BlockDevice{{UUID: inst.Spec.ImageRef, BootIndex: 0,
+	instance.Server.BlockDeviceMappingV2 = []BlockDevice{{UUID: images[inst.Spec.ImageRef], BootIndex: 0,
 		VolumeSize: inst.Spec.BlockSize, DeviceName: "vda", SourceType: "image", DestinationType: "volume", DeleteOnTermination: 1}}
 
 	newResponse, err := CreateInstancePost(urlCreateInstance, instance, newHeader)
